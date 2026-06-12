@@ -1,0 +1,37 @@
+services:
+  random-kanji:
+    # Build from the repo (works for Portainer "Repository" stacks). If you build
+    # and push the image yourself instead, drop `build:` and keep only `image:`.
+    build:
+      context: .
+      dockerfile: Dockerfile
+      
+    image: random-kanji:latest
+    container_name: random-kanji
+    restart: unless-stopped
+
+    # Caddy inside the container serves the site on port 80. With Traefik you do
+    # NOT need to publish a host port — Traefik reaches it over the shared
+    # network below. (For a quick local test without Traefik, uncomment:)
+    # ports:
+    #   - "8080:80"
+
+    networks:
+      - proxy # Traefik
+      - internal # Stack-internal
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      #> external
+      - "traefik.http.routers.${TNAME}.rule=Host(`kanji.mrmobi.dev`)"
+      - "traefik.http.routers.${TNAME}.entrypoints=https-external"
+      - "traefik.http.routers.${TNAME}.tls=true"
+      - "traefik.http.routers.${TNAME}.service=${TNAME}"
+      - "traefik.http.services.${TNAME}.loadbalancer.server.port=80"
+
+networks:
+  proxy: # Taefik Network
+    external: true
+  internal: # Create Stack specific internal Network
+    external: false
