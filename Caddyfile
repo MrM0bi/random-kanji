@@ -1,0 +1,17 @@
+# Serves the built static SPA on :80 with history-API fallback.
+:80 {
+	root * /srv
+	encode gzip zstd
+
+	# kanji.json (and other assets) are served directly; unknown paths fall
+	# back to index.html so client-side state/routing keeps working.
+	try_files {path} /index.html
+	file_server
+
+	# Long-cache fingerprinted build assets; keep data/html fresh.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	@data path *.json
+	header @data Cache-Control "no-cache"
+}
