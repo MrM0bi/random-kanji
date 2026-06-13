@@ -20,14 +20,10 @@ export interface SpecialItem {
 
 /** Per-spin chance for each tier (disjoint). Tune freely. */
 export const TIER_CHANCE: Record<Rarity, number> = {
-  // rare: 0.04,
-  rare: 1,
-  epic: 0.025,
-  // epic: 1,
+  rare: 0.03,
+  epic: 0.02,
   legendary: 0.01,
-  // legendary: 1,
-  secret: 0.01,
-  // secret: 1,
+  secret: 0.001,
 }
 
 export const RARITY_META: Record<
