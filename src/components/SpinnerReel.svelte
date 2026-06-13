@@ -1,29 +1,40 @@
 <script lang="ts">
   import { tick, onMount, untrack } from 'svelte'
   import type { KanjiEntry } from '../lib/types'
+  import type { Pick } from '../lib/stores'
+  import type { SpecialItem } from '../lib/specials'
   import { meaningText } from '../lib/display'
   import { SPINNER_CONFIG } from '../lib/config'
+
+  /** A reel cell is either a normal kanji entry or a rare special element. */
+  type Cell = KanjiEntry | SpecialItem
 
   interface Props {
     pool: KanjiEntry[]
     mode: 'kanji' | 'meaning'
     lang: string
+    durationMs?: number
     onsettled?: () => void
   }
 
-  let { pool, mode, lang, onsettled }: Props = $props()
+  let {
+    pool,
+    mode,
+    lang,
+    durationMs = SPINNER_CONFIG.durationMs,
+    onsettled,
+  }: Props = $props()
 
   const SPIN_CELLS = SPINNER_CONFIG.spinCells // cells travelled per spin (plus jitter)
   const TAIL = 8 // buffer cells after the winner (right fade room)
   const TEASER_LEN = 24
-  const DURATION = SPINNER_CONFIG.durationMs
   const EASE = SPINNER_CONFIG.easing
   const SETTLE_MS = SPINNER_CONFIG.settleMs
   const SETTLE_EASE = SPINNER_CONFIG.settleEasing
 
   let viewport = $state<HTMLDivElement | null>(null)
   let stripEl = $state<HTMLDivElement | null>(null)
-  let cells = $state<KanjiEntry[]>([])
+  let cells = $state<Cell[]>([])
   let offset = $state(0)
   let transition = $state('none')
   let spinning = $state(false)
@@ -33,8 +44,17 @@
   let pendingWinnerIdx = -1
   let endTimer: ReturnType<typeof setTimeout> | undefined
 
+  function isSpecial(c: Cell): c is SpecialItem {
+    return 'rarity' in c
+  }
+
   function label(e: KanjiEntry): string {
     return mode === 'kanji' ? e.kanji : meaningText(e, lang)
+  }
+
+  /** Text shown in a cell — special glyph, or the kanji/meaning per mode. */
+  function cellText(c: Cell): string {
+    return isSpecial(c) ? c.glyph : label(c)
   }
 
   function randomEntry(p: KanjiEntry[]): KanjiEntry {
@@ -52,7 +72,7 @@
     const cell = stripEl.children[index] as HTMLElement | undefined
     if (!cell) return
     const vw = viewport.clientWidth
-    transition = animate ? `transform ${DURATION}ms ${EASE}` : 'none'
+    transition = animate ? `transform ${durationMs}ms ${EASE}` : 'none'
     offset = -(cell.offsetLeft + cell.offsetWidth / 2 - vw / 2)
   }
 
@@ -97,7 +117,7 @@
     return () => window.removeEventListener('resize', onResize)
   })
 
-  export async function spin(winner: KanjiEntry, spinPool: KanjiEntry[]): Promise<void> {
+  export async function spin(pick: Pick, spinPool: KanjiEntry[]): Promise<void> {
     if (spinPool.length === 0) return
     clearTimeout(endTimer)
 
@@ -111,9 +131,10 @@
 
     // Append a fresh run to the RIGHT of the existing strip (off-screen, so the
     // current view does not jump), with the winner planted near the new end.
-    const segment: KanjiEntry[] = []
+    const winnerCell: Cell = pick.kind === 'special' ? pick.item : pick.entry
+    const segment: Cell[] = []
     for (let i = 0; i < SPIN_CELLS; i++) segment.push(randomEntry(spinPool))
-    segment.push(winner)
+    segment.push(winnerCell)
     for (let i = 0; i < TAIL; i++) segment.push(randomEntry(spinPool))
 
     const wIdx = cells.length + SPIN_CELLS
@@ -146,10 +167,10 @@
     // forced reflow the transition is occasionally dropped (instant jump).
     void stripEl.getBoundingClientRect()
     requestAnimationFrame(() => {
-      transition = `transform ${DURATION}ms ${EASE}`
+      transition = `transform ${durationMs}ms ${EASE}`
       offset = target
     })
-    endTimer = setTimeout(finish, DURATION + 200)
+    endTimer = setTimeout(finish, durationMs + 200)
   }
 
   function onTransitionEnd(e: TransitionEvent): void {
@@ -223,14 +244,18 @@
       style="transform: translate3d({offset}px, 0, 0); transition: {transition};"
       ontransitionend={onTransitionEnd}
     >
-      {#each cells as entry, i (i)}
+      {#each cells as c, i (i)}
         <div
           class="cell"
-          class:kanji={mode === 'kanji'}
-          class:meaning={mode === 'meaning'}
+          class:big={isSpecial(c) || mode === 'kanji'}
+          class:text={!isSpecial(c) && mode === 'meaning'}
           class:winner={i === winnerIdx}
+          data-rarity={i === winnerIdx && isSpecial(c) ? c.rarity : undefined}
         >
-          <span class:cjk={mode === 'kanji'}>{label(entry)}</span>
+          <span
+            class:cjk={isSpecial(c) ? !!c.gold : mode === 'kanji'}
+            class:gold={isSpecial(c) && !!c.gold}>{cellText(c)}</span
+          >
         </div>
       {/each}
     </div>
@@ -290,19 +315,19 @@
     color: var(--text);
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
-  .cell.kanji {
+  .cell.big {
     width: 116px;
   }
-  .cell.kanji .cjk {
+  .cell.big span {
     font-size: 3.2rem;
     line-height: 1;
   }
-  .cell.meaning {
+  .cell.text {
     width: fit-content;
     max-width: 15rem;
     padding: 0.5rem 0.9rem;
   }
-  .cell.meaning span {
+  .cell.text span {
     font-size: 1.05rem;
     font-weight: 600;
     line-height: 1.2;
@@ -316,6 +341,39 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent), 0 0 28px -6px var(--accent);
     transform: scale(1.06);
+  }
+
+  /* Rarity glow on a landed special element. */
+  .cell.winner[data-rarity='rare'] {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 2px #a855f7, 0 0 32px -4px #a855f7;
+  }
+  .cell.winner[data-rarity='epic'] {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px #ef4444, 0 0 32px -4px #ef4444;
+  }
+  .cell.winner[data-rarity='legendary'] {
+    border-color: #f5b301;
+    box-shadow: 0 0 0 2px #f5b301, 0 0 36px -2px #f5b301;
+  }
+  .cell.winner[data-rarity='secret'] {
+    border-color: #fde047;
+    box-shadow: 0 0 0 2px #fde047, 0 0 36px -2px #fde047;
+  }
+
+  /* Gold shimmer for the 龍 special. */
+  .gold {
+    background: linear-gradient(100deg, #b8860b, #ffd700, #fff3b0, #ffd700, #b8860b);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2.2s linear infinite;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: 220% 0;
+    }
   }
 
   /* Permanent edge blur: frosted at the far ends, sharp through the centre. */

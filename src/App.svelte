@@ -16,9 +16,12 @@
     lastPickId,
     resetFilters,
   } from './lib/stores'
+  import { spinSpeed } from './lib/stores'
   import { sourceById } from './lib/sources'
   import { loadDeck, computeStats } from './lib/data'
   import { pickRandom } from './lib/filters'
+  import { maybePickSpecial } from './lib/specials'
+  import { SPIN_SPEEDS } from './lib/config'
   import { initTheme } from './lib/theme'
 
   import TopBar from './components/TopBar.svelte'
@@ -26,6 +29,8 @@
   import Filters from './components/Filters.svelte'
   import SpinnerReel from './components/SpinnerReel.svelte'
   import ResultCard from './components/ResultCard.svelte'
+  import SpecialCard from './components/SpecialCard.svelte'
+  import SpecialEffects from './components/SpecialEffects.svelte'
   import PickButton from './components/PickButton.svelte'
 
   type Phase = 'idle' | 'spinning' | 'result'
@@ -72,10 +77,20 @@
   function doPick(): void {
     const pool = $filtered
     if (!$filters || pool.length === 0) return
-    const pick = pickRandom(pool, $lastPickId)
-    if (!pick) return
+
+    // Roll for a rare special "loot drop" first; otherwise a normal kanji.
+    const special = maybePickSpecial()
+    let pick: import('./lib/stores').Pick
+    if (special) {
+      pick = { kind: 'special', item: special }
+    } else {
+      const entry = pickRandom(pool, $lastPickId)
+      if (!entry) return
+      lastPickId.set(entry.id)
+      pick = { kind: 'kanji', entry }
+    }
+
     currentPick.set(pick)
-    lastPickId.set(pick.id)
     revealed = false
     phase = 'spinning'
     reel?.spin(pick, pool)
@@ -121,21 +136,29 @@
             pool={$filtered}
             mode={$mode}
             lang={$lang}
+            durationMs={SPIN_SPEEDS[$spinSpeed].durationMs}
             onsettled={onSettled}
           />
 
           <div class="stage-body">
             {#if phase === 'result' && $currentPick}
-              {#key $currentPick.id + $mode}
-                <div in:fade={{ duration: 220 }}>
-                  <ResultCard
-                    entry={$currentPick}
-                    mode={$mode}
-                    lang={$lang}
-                    bind:revealed
-                  />
-                </div>
-              {/key}
+              {#if $currentPick.kind === 'special'}
+                {#key $currentPick.item.id}
+                  <SpecialCard item={$currentPick.item} />
+                  <SpecialEffects item={$currentPick.item} />
+                {/key}
+              {:else}
+                {#key $currentPick.entry.id + $mode}
+                  <div in:fade={{ duration: 220 }}>
+                    <ResultCard
+                      entry={$currentPick.entry}
+                      mode={$mode}
+                      lang={$lang}
+                      bind:revealed
+                    />
+                  </div>
+                {/key}
+              {/if}
             {:else if $poolCount === 0}
               <p class="hint warn">
                 Keine Kanji entsprechen den Filtern. Erweitere den Bereich.
@@ -182,6 +205,9 @@
   .stage-controls {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
   .stage {
     display: flex;

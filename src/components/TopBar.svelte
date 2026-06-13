@@ -1,10 +1,31 @@
 <script lang="ts">
-  import { sourceId, lang, theme, deckStats } from '../lib/stores'
+  import {
+    faSun,
+    faMoon,
+    faPersonWalking,
+    faCarSide,
+    faRocket,
+  } from '@fortawesome/free-solid-svg-icons'
+  import { sourceId, lang, theme, spinSpeed, deckStats } from '../lib/stores'
   import { SOURCES } from '../lib/sources'
+  import { SPIN_SPEEDS, type SpinSpeed } from '../lib/config'
   import { langLabel } from '../lib/display'
   import { toggleTheme } from '../lib/theme'
+  import Icon from './Icon.svelte'
 
   const languages = $derived($deckStats?.languages ?? [])
+
+  const SPEED_ORDER: SpinSpeed[] = ['normal', 'fast', 'instant']
+  const speedIcons = {
+    normal: faPersonWalking,
+    fast: faCarSide,
+    instant: faRocket,
+  }
+
+  function cycleSpeed(): void {
+    const i = SPEED_ORDER.indexOf($spinSpeed)
+    $spinSpeed = SPEED_ORDER[(i + 1) % SPEED_ORDER.length]
+  }
 </script>
 
 <header class="topbar">
@@ -35,14 +56,29 @@
       </select>
     </label>
 
-    <button
-      class="btn theme-toggle"
-      onclick={toggleTheme}
-      title="Theme wechseln"
-      aria-label="Theme wechseln"
-    >
-      {#if $theme === 'dark'}☀️{:else}🌙{/if}
-    </button>
+    <div class="ctrl">
+      <span class="ctrl-label">Tempo</span>
+      <button
+        class="btn icon-btn"
+        onclick={cycleSpeed}
+        title="Tempo: {SPIN_SPEEDS[$spinSpeed].label}"
+        aria-label="Tempo: {SPIN_SPEEDS[$spinSpeed].label} (wechseln)"
+      >
+        <Icon icon={speedIcons[$spinSpeed]} />
+      </button>
+    </div>
+
+    <div class="ctrl">
+      <span class="ctrl-label">Theme</span>
+      <button
+        class="btn icon-btn"
+        onclick={toggleTheme}
+        title={$theme === 'dark' ? 'Dunkles Theme' : 'Helles Theme'}
+        aria-label="Theme wechseln"
+      >
+        <Icon icon={$theme === 'dark' ? faMoon : faSun} />
+      </button>
+    </div>
   </div>
 </header>
 
@@ -88,9 +124,10 @@
     color: var(--muted);
     padding-left: 0.15rem;
   }
-  .theme-toggle {
+  .icon-btn {
+    height: 2.375rem; /* match the Deck/Sprache select height (38px) */
+    padding: 0 0.8rem;
     font-size: 1.05rem;
-    padding: 0.5rem 0.7rem;
-    align-self: flex-end;
+    color: var(--accent);
   }
 </style>
