@@ -2,10 +2,17 @@ import { writable, derived, type Writable } from 'svelte/store'
 import type { DeckStats, KanjiEntry } from './types'
 import { applyFilters, type ResolvedFilters } from './filters'
 import { DEFAULT_SOURCE_ID } from './sources'
+import type { SpinSpeed } from './config'
+import type { SpecialItem } from './specials'
 
 export type Mode = 'kanji' | 'meaning'
 export type Theme = 'light' | 'dark'
 export type LoadState = 'loading' | 'ready' | 'error'
+
+/** A spin result: either a normal kanji entry or a rare special element. */
+export type Pick =
+  | { kind: 'kanji'; entry: KanjiEntry }
+  | { kind: 'special'; item: SpecialItem }
 
 /**
  * Raw filter values as edited by the user. `null` means "open / full range",
@@ -68,6 +75,7 @@ export const mode = persisted<Mode>('rk:mode', 'kanji')
 export const lang = persisted<string>('rk:lang', 'de')
 export const sourceId = persisted<string>('rk:source', DEFAULT_SOURCE_ID)
 export const rawFilters = persisted<RawFilters>('rk:filters', { ...FULL_FILTERS })
+export const spinSpeed = persisted<SpinSpeed>('rk:speed', 'normal')
 
 /* ------------------------------------------------------------------ */
 /* Runtime (deck) state                                                */
@@ -78,7 +86,7 @@ export const deckStats = writable<DeckStats | null>(null)
 export const loadState = writable<LoadState>('loading')
 export const loadError = writable<string>('')
 
-export const currentPick = writable<KanjiEntry | null>(null)
+export const currentPick = writable<Pick | null>(null)
 export const lastPickId = writable<string | undefined>(undefined)
 
 /** Resolve raw filters against the live deck stats (null -> deck bound). */

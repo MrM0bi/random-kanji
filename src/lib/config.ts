@@ -17,3 +17,16 @@ export const SPINNER_CONFIG = {
   /** Easing for that final centring nudge. */
   settleEasing: 'cubic-bezier(0.22, 1, 0.36, 1)',
 }
+
+export type SpinSpeed = 'normal' | 'fast' | 'instant'
+
+/**
+ * Selectable spin speeds. All share the same easing/cells/settle (above) — only
+ * the total duration changes, so every speed is animated the same way, just
+ * faster or slower to land.
+ */
+export const SPIN_SPEEDS: Record<SpinSpeed, { label: string; durationMs: number }> = {
+  normal: { label: 'Normal', durationMs: 5000 },
+  fast: { label: 'Fast', durationMs: 2200 },
+  instant: { label: 'Instant', durationMs: 800 },
+}
