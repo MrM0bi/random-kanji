@@ -16,6 +16,10 @@ narrow the pool — all wrapped in a CS:GO-style spinning reel.
 - **Reveal** to check the answer (meanings, primitives, ID / JLPT / stroke metadata).
 - **Light / dark** toggle; preferences, filters and mode persist in `localStorage`.
 - Deck-source and language-version pickers, ready for more decks/languages later.
+- **Rare "loot drops"** — special items that occasionally replace a spin result, with per-tier
+  odds, rarity effects (sparkle / glow / emoji rain) and randomized flavour text.
+- **Runtime config** — spinner feel, spin speeds, loot odds and the loot items all live in
+  `config.json`, loaded at startup so they stay editable *after* the build.
 
 ## Tech stack
 
@@ -28,6 +32,24 @@ The app fetches a deck JSON at runtime from `/kanji.json` (configured in
 [`src/lib/sources.ts`](src/lib/sources.ts)). The file lives in [`public/`](public/) so it is served
 alongside the app in both dev and production. To add decks/languages, extend `SOURCES` — the data
 schema already supports multiple `versions` per kanji.
+
+## Configuration
+
+All tunables live in [`public/config.json`](public/config.json), fetched on startup just like the
+deck (with a built-in fallback in [`src/lib/config.ts`](src/lib/config.ts) if the file is missing).
+Because it is a static file served next to the app — **not** compiled into the bundle — you can edit
+it after the build without recompiling:
+
+- **`spinner`** — reel feel: total `durationMs`, `easing`, `spinCells`, settle nudge.
+- **`spinSpeeds`** — the Normal / Fast / Instant durations behind the Tempo button.
+- **`rarities`** — per-tier `chance` (per-spin drop odds), `color`/`dot`/`label`, and the effect
+  flags `sparkle`, `glow`, `emojiRain`.
+- **`specials`** — the loot items: `glyph`, `name`, `kanji`, `rarity`, optional `gold`, and a
+  `descriptions` array (one line is shown at random when the item drops).
+
+In production the file is baked into the image at `/config.json`. To tweak it on a running container
+**without rebuilding**, bind-mount your own copy over it (see the commented `volumes:` block in
+[`docker-compose.yml`](docker-compose.yml)) and restart the container.
 
 ## Development
 
@@ -111,6 +133,7 @@ Or uncomment the `ports:` mapping in `docker-compose.yml` and run `docker compos
 
 `kanji.json` is baked into the image at build time, so updating the deck (or any code) means
 **rebuilding the image and redeploying** the stack (Portainer: *Pull and redeploy* / re-deploy;
-CLI: `docker compose up -d --build`).
+CLI: `docker compose up -d --build`). `config.json` is baked in the same way, but can alternatively
+be bind-mounted and edited live — see [Configuration](#configuration) above.
 
 To serve without Docker entirely, run `npm run build` and point any static web server at `dist/`.

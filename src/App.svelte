@@ -20,8 +20,8 @@
   import { sourceById } from './lib/sources'
   import { loadDeck, computeStats } from './lib/data'
   import { pickRandom } from './lib/filters'
-  import { maybePickSpecial } from './lib/specials'
-  import { SPIN_SPEEDS } from './lib/config'
+  import { maybePickSpecial, pickDescription } from './lib/specials'
+  import { config } from './lib/config'
   import { initTheme } from './lib/theme'
 
   import TopBar from './components/TopBar.svelte'
@@ -82,7 +82,7 @@
     const special = maybePickSpecial()
     let pick: import('./lib/stores').Pick
     if (special) {
-      pick = { kind: 'special', item: special }
+      pick = { kind: 'special', item: special, description: pickDescription(special) }
     } else {
       const entry = pickRandom(pool, $lastPickId)
       if (!entry) return
@@ -136,7 +136,7 @@
             pool={$filtered}
             mode={$mode}
             lang={$lang}
-            durationMs={SPIN_SPEEDS[$spinSpeed].durationMs}
+            durationMs={$config.spinSpeeds[$spinSpeed].durationMs}
             onsettled={onSettled}
           />
 
@@ -144,7 +144,10 @@
             {#if phase === 'result' && $currentPick}
               {#if $currentPick.kind === 'special'}
                 {#key $currentPick.item.id}
-                  <SpecialCard item={$currentPick.item} />
+                  <SpecialCard
+                    item={$currentPick.item}
+                    description={$currentPick.description}
+                  />
                   <SpecialEffects item={$currentPick.item} />
                 {/key}
               {:else}
@@ -268,5 +271,22 @@
     text-align: center;
     color: var(--muted);
     font-size: 0.82rem;
+  }
+
+  /* Tighten vertical rhythm on phones so the header/stage take less space. */
+  @media (max-width: 560px) {
+    .page {
+      padding: 1rem 0.75rem 2rem;
+    }
+    .shell {
+      gap: 1rem;
+    }
+    .main {
+      gap: 1rem;
+    }
+    .stage {
+      gap: 1rem;
+      padding: 1rem;
+    }
   }
 </style>

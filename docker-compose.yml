@@ -16,6 +16,13 @@ services:
     # ports:
     #   - "8080:80"
 
+    # The runtime config (spinner feel, spin speeds, loot odds & items) is baked
+    # into the image at /srv/config.json. To tweak it WITHOUT rebuilding, drop a
+    # config.json next to this file and bind-mount it over the baked one, then
+    # restart the container:
+    # volumes:
+    #   - ./config.json:/srv/config.json:ro
+
     networks:
       - proxy # Traefik
       - internal # Stack-internal

@@ -8,7 +8,7 @@
   } from '@fortawesome/free-solid-svg-icons'
   import { sourceId, lang, theme, spinSpeed, deckStats } from '../lib/stores'
   import { SOURCES } from '../lib/sources'
-  import { SPIN_SPEEDS, type SpinSpeed } from '../lib/config'
+  import { config, type SpinSpeed } from '../lib/config'
   import { langLabel } from '../lib/display'
   import { toggleTheme } from '../lib/theme'
   import Icon from './Icon.svelte'
@@ -61,8 +61,8 @@
       <button
         class="btn icon-btn"
         onclick={cycleSpeed}
-        title="Tempo: {SPIN_SPEEDS[$spinSpeed].label}"
-        aria-label="Tempo: {SPIN_SPEEDS[$spinSpeed].label} (wechseln)"
+        title="Tempo: {$config.spinSpeeds[$spinSpeed].label}"
+        aria-label="Tempo: {$config.spinSpeeds[$spinSpeed].label} (wechseln)"
       >
         <Icon icon={speedIcons[$spinSpeed]} />
       </button>
@@ -129,5 +129,36 @@
     padding: 0 0.8rem;
     font-size: 1.05rem;
     color: var(--accent);
+  }
+
+  /* Compact the header on phones; the desktop layout above is unchanged. */
+  @media (max-width: 560px) {
+    .topbar {
+      gap: 0.5rem 0.75rem;
+    }
+    .logo {
+      font-size: 1.25rem;
+    }
+    h1 {
+      font-size: 1.05rem;
+    }
+    .controls {
+      gap: 0.4rem 0.6rem;
+    }
+    .ctrl {
+      gap: 0.1rem;
+    }
+    .ctrl-label {
+      font-size: 0.6rem;
+    }
+    .select {
+      padding: 0.35rem 1.7rem 0.35rem 0.55rem;
+      font-size: 0.82rem;
+    }
+    .icon-btn {
+      height: 2rem;
+      padding: 0 0.55rem;
+      font-size: 0.95rem;
+    }
   }
 </style>

@@ -4,7 +4,7 @@
   import type { Pick } from '../lib/stores'
   import type { SpecialItem } from '../lib/specials'
   import { meaningText } from '../lib/display'
-  import { SPINNER_CONFIG } from '../lib/config'
+  import { config } from '../lib/config'
 
   /** A reel cell is either a normal kanji entry or a rare special element. */
   type Cell = KanjiEntry | SpecialItem
@@ -21,16 +21,19 @@
     pool,
     mode,
     lang,
-    durationMs = SPINNER_CONFIG.durationMs,
+    durationMs,
     onsettled,
   }: Props = $props()
 
-  const SPIN_CELLS = SPINNER_CONFIG.spinCells // cells travelled per spin (plus jitter)
   const TAIL = 8 // buffer cells after the winner (right fade room)
   const TEASER_LEN = 24
-  const EASE = SPINNER_CONFIG.easing
-  const SETTLE_MS = SPINNER_CONFIG.settleMs
-  const SETTLE_EASE = SPINNER_CONFIG.settleEasing
+  // Spinner feel comes from the runtime config (loaded before mount).
+  const SPIN_CELLS = $derived($config.spinner.spinCells) // cells travelled per spin
+  const EASE = $derived($config.spinner.easing)
+  const SETTLE_MS = $derived($config.spinner.settleMs)
+  const SETTLE_EASE = $derived($config.spinner.settleEasing)
+  // Spin duration: the speed-selector value from App, else the config default.
+  const dur = $derived(durationMs ?? $config.spinner.durationMs)
 
   let viewport = $state<HTMLDivElement | null>(null)
   let stripEl = $state<HTMLDivElement | null>(null)
@@ -72,7 +75,7 @@
     const cell = stripEl.children[index] as HTMLElement | undefined
     if (!cell) return
     const vw = viewport.clientWidth
-    transition = animate ? `transform ${durationMs}ms ${EASE}` : 'none'
+    transition = animate ? `transform ${dur}ms ${EASE}` : 'none'
     offset = -(cell.offsetLeft + cell.offsetWidth / 2 - vw / 2)
   }
 
@@ -167,10 +170,10 @@
     // forced reflow the transition is occasionally dropped (instant jump).
     void stripEl.getBoundingClientRect()
     requestAnimationFrame(() => {
-      transition = `transform ${durationMs}ms ${EASE}`
+      transition = `transform ${dur}ms ${EASE}`
       offset = target
     })
-    endTimer = setTimeout(finish, durationMs + 200)
+    endTimer = setTimeout(finish, dur + 200)
   }
 
   function onTransitionEnd(e: TransitionEvent): void {
@@ -361,18 +364,33 @@
     box-shadow: 0 0 0 2px #fde047, 0 0 36px -2px #fde047;
   }
 
-  /* Gold shimmer for the 龍 special. */
+  /* Gold shimmer for the 龍 special. Two identical cycles + a 200% background
+     size make the 0% -> 100% loop seamless (no visible snap). */
   .gold {
-    background: linear-gradient(100deg, #b8860b, #ffd700, #fff3b0, #ffd700, #b8860b);
-    background-size: 220% 100%;
+    background-image: linear-gradient(
+      100deg,
+      #b8860b,
+      #ffd700,
+      #fff3b0,
+      #ffd700,
+      #b8860b,
+      #ffd700,
+      #fff3b0,
+      #ffd700,
+      #b8860b
+    );
+    background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: shimmer 2.2s linear infinite;
+    animation: shimmer 3s linear infinite;
   }
   @keyframes shimmer {
+    from {
+      background-position: 0% 0;
+    }
     to {
-      background-position: 220% 0;
+      background-position: 100% 0;
     }
   }
 
