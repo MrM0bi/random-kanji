@@ -11,8 +11,8 @@ export interface Source {
  */
 export const SOURCES: Source[] = [
   {
-    id: 'heisig1-de',
-    label: 'Heisig 1',
+    id: 'heisig-1',
+    label: 'Heisig',
     url: `${import.meta.env.BASE_URL}kanji.json`,
   },
 ]

@@ -1,0 +1,362 @@
+{
+  "spinner": {
+    "durationMs": 5000,
+    "easing": "cubic-bezier(0.18, 0.9, 0.24, 1)",
+    "spinCells": 48,
+    "settleMs": 450,
+    "settleEasing": "cubic-bezier(0.22, 1, 0.36, 1)"
+  },
+  "spinSpeeds": {
+    "normal": { "label": "Normal", "durationMs": 5000 },
+    "fast": { "label": "Fast", "durationMs": 2000 },
+    "instant": { "label": "Instant", "durationMs": 600 }
+  },
+  "rarities": {
+    "rare": {
+      "label": "Rare",
+      "dot": "🟣",
+      "color": "#a855f7",
+      "chance": 0.04,
+      "sparkle": false,
+      "glow": false,
+      "emojiRain": false
+    },
+    "epic": {
+      "label": "Epic",
+      "dot": "🔴",
+      "color": "#ef4444",
+      "chance": 0.03,
+      "sparkle": true,
+      "glow": false,
+      "emojiRain": false
+    },
+    "legendary": {
+      "label": "Legendary",
+      "dot": "🟡",
+      "color": "#f5b301",
+      "chance": 0.02,
+      "sparkle": true,
+      "glow": true,
+      "emojiRain": false
+    },
+    "secret": {
+      "label": "Secret",
+      "dot": "💛",
+      "color": "#fde047",
+      "chance": 0.01,
+      "sparkle": true,
+      "glow": true,
+      "emojiRain": true
+    }
+  },
+  "specials": [
+    {
+      "id": "sushi",
+      "glyph": "🍣",
+      "name": "Sushi",
+      "kanji": "寿司",
+      "rarity": "rare",
+      "descriptions": [
+        "Take a snack break — you've earned it.",
+        "A perfectly prepared sushi platter appears. Nobody asks where it came from.",
+        "The study gods have sent provisions.",
+        "Fresh. Delicious. Completely unrelated to kanji.",
+        "A small reward for a large amount of reading.",
+        "Your streak has attracted migrating sushi.",
+        "You found sushi. This is objectively a good outcome."
+      ]
+    },
+    {
+      "id": "koinobori",
+      "glyph": "🎏",
+      "name": "Koinobori",
+      "kanji": "鯉のぼり",
+      "rarity": "rare",
+      "descriptions": [
+        "The carp swim upstream, just like your study grind.",
+        "The carp keep swimming. So do you.",
+        "Against the current, toward fluency.",
+        "Every expert was once a very determined fish.",
+        "The winds are favorable for studying.",
+        "The carp sees your Kanji statistics and approves.",
+        "One more card. Then another. That's how rivers are crossed."
+      ]
+    },
+    {
+      "id": "blackbelt",
+      "glyph": "🥋",
+      "name": "Black Belt",
+      "kanji": "黒帯",
+      "rarity": "rare",
+      "descriptions": [
+        "The dojo is silent. The sensei nods. Barely.",
+        "The sensei says nothing. Somehow that's a compliment.",
+        "Your kanji form has improved.",
+        "A silent nod from the dojo.",
+        "The belt is black. The ink is black. Coincidence?",
+        "Years of training condensed into a random spinner result.",
+        "You are now qualified to misread advanced kanji with confidence."
+      ]
+    },
+    {
+      "id": "fuji",
+      "glyph": "🗾",
+      "name": "Fuji-san",
+      "kanji": "富士山",
+      "rarity": "rare",
+      "descriptions": [
+        "Sugoi! The sacred mountain blesses your session.",
+        "The mountain stands eternal. Your review queue does not.",
+        "Fuji-san watches over your studies.",
+        "A clear view of Fuji is considered lucky. So is this.",
+        "The sacred peak appears through the clouds.",
+        "Your session has been officially recognized by a mountain.",
+        "Even Fuji started from the bottom."
+      ]
+    },
+    {
+      "id": "omamori",
+      "glyph": "🧧",
+      "name": "Omamori",
+      "kanji": "お守り",
+      "rarity": "rare",
+      "descriptions": [
+        "A lucky charm joins your journey.",
+        "Fortune favors today's reviews.",
+        "An omamori watches over your studies.",
+        "Your streak is now under protection.",
+        "A little extra luck never hurts.",
+        "The shrine has acknowledged your effort.",
+        "You feel slightly luckier.",
+        "A blessing for the road ahead."
+      ]
+    },
+    {
+      "id": "ramen",
+      "glyph": "🍜",
+      "name": "Ramen Bowl",
+      "kanji": "ラーメン",
+      "rarity": "epic",
+      "descriptions": [
+        "Ichiraku Ramen. Naruto would be proud.",
+        "A steaming bowl of motivation.",
+        "Study first. Slurp later.",
+        "The aroma alone restores +10 focus.",
+        "Somewhere, a ramen chef believes in you.",
+        "Hot noodles. Hot streak.",
+        "Your concentration has been seasoned to perfection."
+      ]
+    },
+    {
+      "id": "torii",
+      "glyph": "⛩️",
+      "name": "Torii Gate",
+      "kanji": "鳥居",
+      "rarity": "epic",
+      "descriptions": [
+        "The spirits are with you.",
+        "You pass briefly between worlds.",
+        "The spirits acknowledge your effort.",
+        "A sacred path opens before you.",
+        "For a moment, your reviews feel blessed.",
+        "Even the kami appreciate consistency.",
+        "The gate appears. Nobody knows why."
+      ]
+    },
+    {
+      "id": "kimono",
+      "glyph": "👘",
+      "name": "Golden Kimono",
+      "kanji": "着物",
+      "rarity": "epic",
+      "descriptions": [
+        "The most ornate garment in Japan, yours briefly.",
+        "Elegance has entered the chat.",
+        "For a brief moment, your studies become extremely fashionable.",
+        "An outfit worthy of a festival.",
+        "Tradition never goes out of style.",
+        "You are dressed for success. Temporarily.",
+        "The fabric alone costs more than your textbook."
+      ]
+    },
+    {
+      "id": "kitsune",
+      "glyph": "🦊",
+      "name": "Kitsune",
+      "kanji": "狐",
+      "rarity": "epic",
+      "descriptions": [
+        "A fox spirit has entered your session.",
+        "A fox spirit watches from the shadows.",
+        "You feel slightly smarter. This may be a trick.",
+        "The kitsune smiles. That's usually concerning.",
+        "Nine tails. Unknown intentions.",
+        "Something magical just happened. Probably.",
+        "The fox claims it knows all the jouyou kanji."
+      ]
+    },
+    {
+      "id": "tanuki",
+      "glyph": "🦝",
+      "name": "Tanuki",
+      "kanji": "狸",
+      "rarity": "epic",
+      "descriptions": [
+        "A tanuki has appeared. Verify everything.",
+        "The tanuki offers wisdom. Caution is advised.",
+        "A tanuki approves of your studies. Probably.",
+        "The tanuki knows all the answers. It will share none.",
+        "A suspiciously confident tanuki appears.",
+        "The tanuki claims you're doing great.",
+        "You have attracted a tanuki.",
+        "The tanuki is pleased. This changes nothing."
+      ]
+    },
+    {
+      "id": "katana",
+      "glyph": "🗡️",
+      "name": "Katana",
+      "kanji": "刀",
+      "rarity": "legendary",
+      "descriptions": [
+        "A katana takes 18 months to forge. You got one from a kanji spinner. Do not tell the swordsmith.",
+        "Forged by masters. Won from a study spinner.",
+        "Centuries of craftsmanship. Seconds of luck.",
+        "A blade worthy of legend.",
+        "The swordsmith would like a word.",
+        "The edge is flawless. Unlike your handwriting.",
+        "You unsheathe pure motivation."
+      ]
+    },
+    {
+      "id": "ryu",
+      "glyph": "龍",
+      "name": "Ryū",
+      "kanji": "龍",
+      "rarity": "legendary",
+      "gold": true,
+      "descriptions": [
+        "Japanese dragons swim through clouds. This one swam through your Wi-Fi. Nobody can explain it.",
+        "A dragon has noticed your studies.",
+        "The clouds part. Something enormous moves.",
+        "Legends say dragons reward perseverance.",
+        "The dragon circles once, then vanishes.",
+        "Ancient power. Terrible timing.",
+        "Nobody summoned the dragon. Yet here we are."
+      ]
+    },
+    {
+      "id": "oni",
+      "glyph": "👺",
+      "name": "Oni Mask",
+      "kanji": "鬼",
+      "rarity": "legendary",
+      "descriptions": [
+        "An Oni has cursed your studies... Skip the card and prove the curse wrong!",
+        "The Oni challenges your dedication.",
+        "A curse has been placed upon your next review.",
+        "The demon laughs. Rude.",
+        "The Oni believes you'll quit now.",
+        "Prove the Oni wrong.",
+        "Your studies have attracted unwanted supernatural attention."
+      ]
+    },
+    {
+      "id": "scroll",
+      "glyph": "📜",
+      "name": "Lost Kanji Scroll",
+      "kanji": "秘伝の巻物",
+      "rarity": "legendary",
+      "descriptions": [
+        "An ancient scroll has been uncovered.",
+        "The scroll contains no shortcuts.",
+        "Centuries of wisdom. Still need reviews.",
+        "The secret technique is more studying.",
+        "The scroll's contents remain classified.",
+        "An ancient master left this behind.",
+        "The scroll promises everything.",
+        "The final secret was practice."
+      ]
+    },
+    {
+      "id": "gundam",
+      "glyph": "🤖",
+      "name": "Gundam",
+      "kanji": "ガンダム",
+      "rarity": "secret",
+      "descriptions": [
+        "A Wild Gundam has interrupted your kanji studies. It does not explain itself. It never will.",
+        "A 20-meter robot has interrupted your studies.",
+        "Pilot not included.",
+        "The giant robot acknowledges your existence.",
+        "Some problems require flashcards. Others require a Gundam.",
+        "Nobody knows why it's here. Least of all the Gundam.",
+        "Your review session has escalated dramatically."
+      ]
+    },
+    {
+      "id": "dango",
+      "glyph": "🍡",
+      "name": "Dango",
+      "kanji": "団子",
+      "rarity": "secret",
+      "descriptions": [
+        "Dango, dango, dango, dango, dango daikazoku...",
+        "The dango council has convened.",
+        "An unusually important collection of rice balls appears.",
+        "The dango are pleased.",
+        "Nobody escapes the dango parade.",
+        "This event has no educational value.",
+        "You have been selected by the dango."
+      ]
+    },
+    {
+      "id": "taiyaki",
+      "glyph": "🐟",
+      "name": "Taiyaki",
+      "kanji": "たい焼き",
+      "rarity": "secret",
+      "descriptions": [
+        "You have been blessed by a fish-shaped pancake. Nobody knows why.",
+        "A fish-shaped pastry emerges from destiny.",
+        "Warm. Sweet. Slightly mysterious.",
+        "The taiyaki distribution system has chosen you.",
+        "Historians will be unable to explain this.",
+        "A golden taiyaki appears. Questions remain unanswered.",
+        "You have received the Fish of Knowledge. It contains red bean paste."
+      ]
+    },
+    {
+      "id": "gigachad",
+      "glyph": "👴",
+      "name": "Giga-Chad Samurai",
+      "kanji": "ギガチャド侍",
+      "rarity": "secret",
+      "descriptions": [
+        "A legendary warrior blesses your session.",
+        "The old warrior has seen your studies. Continue.",
+        "A master of ten thousand battles blesses your session.",
+        "The samurai says nothing. Somehow, you feel encouraged.",
+        "The warrior approves of your dedication.",
+        "An ancient swordsman acknowledges your progress."
+      ]
+    },
+    {
+      "id": "sakura",
+      "glyph": "🌸",
+      "name": "Sakura Blizzard",
+      "kanji": "桜",
+      "rarity": "secret",
+      "descriptions": [
+        "Cherry blossoms fill the air.",
+        "Spring arrives all at once.",
+        "The petals dance briefly.",
+        "For a moment, everything is pink.",
+        "The wind carries a thousand blossoms.",
+        "Even the review queue looks beautiful.",
+        "Peak bloom has arrived.",
+        "The season changes around you."
+      ]
+    }
+  ]
+}

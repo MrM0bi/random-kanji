@@ -1,7 +1,8 @@
 <script lang="ts">
   import { untrack } from 'svelte'
+  import { get } from 'svelte/store'
   import type { SpecialItem } from '../lib/specials'
-  import { RARITY_META } from '../lib/specials'
+  import { config } from '../lib/config'
 
   interface Props {
     item: SpecialItem
@@ -13,20 +14,18 @@
 
   // The component is remounted per special (keyed), so particles are generated
   // once from the current item — read untracked to make that intent explicit.
-  const { petals, sparkles } = untrack(() => {
+  const { rain, sparkles } = untrack(() => {
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const showSakura = item.effect === 'sakura'
-    // Sparkle burst celebrates the rarest tiers.
-    const showSparkle = item.rarity === 'legendary' || item.rarity === 'secret'
+    const meta = get(config).rarities[item.rarity]
 
-    // Petals drift down across the whole screen.
-    const petals = showSakura && !reduced
+    // The item's own emoji rains down across the whole screen.
+    const rain = meta.emojiRain && !reduced
       ? Array.from({ length: 30 }, () => ({
           x: rand(0, 100),
-          size: rand(14, 30),
+          size: rand(16, 32),
           dur: rand(4, 8),
           delay: rand(0, 2.5),
           dx: rand(-12, 12),
@@ -34,9 +33,9 @@
         }))
       : []
 
-    // Sparkles burst outward from the result area.
-    const colors = [RARITY_META[item.rarity].color, '#ffd700', '#ffffff']
-    const sparkles = showSparkle && !reduced
+    // Sparkles burst outward from the result area, tinted in the rarity colour.
+    const colors = [meta.color, '#ffd700', '#ffffff']
+    const sparkles = meta.sparkle && !reduced
       ? Array.from({ length: 26 }, (_, i) => {
           const angle = rand(0, Math.PI * 2)
           const dist = rand(80, 320)
@@ -51,17 +50,17 @@
         })
       : []
 
-    return { petals, sparkles }
+    return { rain, sparkles }
   })
 </script>
 
-{#if petals.length || sparkles.length}
+{#if rain.length || sparkles.length}
   <div class="fx" aria-hidden="true">
-    {#each petals as p}
+    {#each rain as p}
       <span
-        class="petal"
+        class="drop"
         style="left: {p.x}vw; font-size: {p.size}px; --dx: {p.dx}vw; --rot: {p.rot}deg; animation-duration: {p.dur}s; animation-delay: {p.delay}s;"
-        >🌸</span
+        >{item.glyph}</span
       >
     {/each}
     {#each sparkles as s}
@@ -83,7 +82,7 @@
     z-index: 1000;
   }
 
-  .petal {
+  .drop {
     position: absolute;
     top: -8vh;
     line-height: 1;

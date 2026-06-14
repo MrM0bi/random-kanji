@@ -12,7 +12,7 @@ export type LoadState = 'loading' | 'ready' | 'error'
 /** A spin result: either a normal kanji entry or a rare special element. */
 export type Pick =
   | { kind: 'kanji'; entry: KanjiEntry }
-  | { kind: 'special'; item: SpecialItem }
+  | { kind: 'special'; item: SpecialItem; description: string }
 
 /**
  * Raw filter values as edited by the user. `null` means "open / full range",
