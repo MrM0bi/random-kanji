@@ -82,11 +82,11 @@ review these in the compose file and adjust to your environment:
 1. Push this repo to a Git remote your Portainer can reach (GitHub, Gitea, …):
    ```bash
    git remote add origin <your-repo-url>
-   git push -u origin master
+   git push -u origin main
    ```
 2. In Portainer: **Stacks → Add stack → Repository**.
    - **Repository URL** — your repo (add credentials if it is private)
-   - **Reference** — `refs/heads/master`
+   - **Reference** — `refs/heads/main`
    - **Compose path** — `docker-compose.yml`
 3. Under **Environment variables**, add `TNAME` = `random-kanji`.
 4. **Deploy the stack.** Portainer clones the repo and builds the image from the `Dockerfile`, then
@@ -95,6 +95,14 @@ review these in the compose file and adjust to your environment:
    automatically.
 
 The external `proxy` network must already exist — it does if Traefik is running on it.
+
+> **Updating this stack — leave "Re-pull image" OFF.** Because this stack *builds* its image from
+> the repo, use Portainer's **Pull and redeploy** (which re-clones the Git repo and rebuilds) but do
+> **not** tick the *Re-pull image* option. "Re-pull image" tries to fetch the image from a registry;
+> since the image is built locally and never pushed, that fails with
+> `pull access denied for random-kanji, repository does not exist`. The compose file sets
+> `pull_policy: build` and deliberately omits an `image:` tag to avoid this. If you want push-to-
+> deploy with image pulls instead, see **Option 4** below.
 
 ### Option 2 — Docker + Docker Compose (CLI, no Portainer)
 
@@ -123,11 +131,35 @@ docker compose up -d --build
 ### Option 3 — Quick local test (no reverse proxy)
 
 ```bash
-docker build -t random-kanji .
+docker buildx build --load -t random-kanji .
 docker run --rm -p 8080:80 random-kanji   # http://localhost:8080
 ```
 
+`docker buildx build --load` uses the modern BuildKit/Buildx builder and loads the result into your
+local image store. (Plain `docker build` still works but prints a deprecation warning — see
+[BuildKit / Buildx](#buildkit--buildx) below.)
+
 Or uncomment the `ports:` mapping in `docker-compose.yml` and run `docker compose up --build`.
+
+### Option 4 — GitOps with a prebuilt image (recommended for auto-redeploy)
+
+Instead of having Portainer build the image, let CI build it and have Portainer just **pull** it.
+This is the clean separation that "Pull and redeploy" expects.
+
+1. The included workflow [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)
+   builds and pushes `ghcr.io/<owner>/<repo>:latest` (and a `:<sha>` tag) to the **GitHub Container
+   Registry** on every push to `main`. It needs no secrets — it uses the built-in `GITHUB_TOKEN`.
+2. After the first run, open the package in your GitHub profile and either make it **public**, or
+   keep it private and add GHCR credentials to Portainer (**Registries → Add registry → Custom**,
+   URL `ghcr.io`, a GitHub PAT with `read:packages`).
+3. In `docker-compose.yml`, remove the `build:` and `pull_policy:` lines and set:
+   ```yaml
+   image: ghcr.io/<your-gh-username>/random-kanji:latest
+   ```
+4. In Portainer, deploy the stack and add a **webhook** (Stack → Webhooks). Add a final step to the
+   workflow (or a separate `curl`) that calls the webhook after the push, so each `git push` →
+   image build → Portainer pulls the new image and recreates the container. Here "Re-pull image"
+   **is** the correct action.
 
 ### Updating the deck
 
@@ -137,3 +169,30 @@ CLI: `docker compose up -d --build`). `config.json` is baked in the same way, bu
 be bind-mounted and edited live — see [Configuration](#configuration) above.
 
 To serve without Docker entirely, run `npm run build` and point any static web server at `dist/`.
+
+### BuildKit / Buildx
+
+Recent Docker deprecates the legacy image builder:
+
+```
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit
+```
+
+This only affects the **manual `docker build`** command — Portainer's stack builds and
+`docker compose build` already use BuildKit. To migrate the manual command:
+
+- **Use Buildx directly** (preferred): `docker buildx build --load -t random-kanji .`. The `--load`
+  flag puts the built image into your local image store so `docker run` can use it. Buildx ships
+  with Docker Desktop; on a Linux server install it via your package manager
+  (`sudo apt-get install docker-buildx-plugin` on Debian/Ubuntu using Docker's apt repo).
+- **Or make `docker build` use BuildKit** without changing the command: enable it daemon-wide in
+  `/etc/docker/daemon.json`:
+  ```json
+  { "features": { "buildkit": true } }
+  ```
+  then `sudo systemctl restart docker`. (A per-shell `export DOCKER_BUILDKIT=1` also works.)
+- **Optional:** `docker buildx install` aliases `docker build` to `docker buildx build` globally.
+
+Buildx also unlocks multi-architecture images (e.g. building for `arm64` on an `amd64` host) via
+`--platform`, though that requires pushing to a registry rather than `--load`.

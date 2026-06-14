@@ -1,12 +1,25 @@
 services:
   random-kanji:
-    # Build from the repo (works for Portainer "Repository" stacks). If you build
-    # and push the image yourself instead, drop `build:` and keep only `image:`.
+    # Build the image from the repo (works for Portainer "Repository" stacks).
     build:
       context: .
       dockerfile: Dockerfile
-      
-    image: random-kanji:latest
+
+    # NOTE: do NOT add an unqualified `image: random-kanji:latest` here. Such a
+    # name resolves to docker.io/library/random-kanji, and Portainer's
+    # "Pull and redeploy" then tries to PULL it from Docker Hub — which fails
+    # ("pull access denied"), because the image is only ever built locally and
+    # never pushed. Building from git needs no image name at all.
+    #
+    # `pull_policy: build` makes Compose (re)build from the repo on every
+    # redeploy and never attempt a registry pull.
+    pull_policy: build
+
+    # --- Alternative: pull a prebuilt image from a registry (see GitOps below) ---
+    # If you switch to the CI-build-and-push workflow, delete the `build:` and
+    # `pull_policy:` lines above and use an image from your registry instead:
+    # image: ghcr.io/<your-gh-username>/random-kanji:latest
+
     container_name: random-kanji
     restart: unless-stopped
 
