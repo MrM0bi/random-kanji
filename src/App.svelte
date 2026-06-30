@@ -103,7 +103,38 @@
   function onSettled(): void {
     phase = 'result'
   }
+
+  // A kanji result that hasn't been revealed yet (specials have no reveal step).
+  const canReveal = $derived(
+    phase === 'result' && $currentPick?.kind === 'kanji' && !revealed,
+  )
+
+  function spinIfPossible(): void {
+    if (phase !== 'spinning' && $availableCount > 0) doPick()
+  }
+
+  function onKey(e: KeyboardEvent): void {
+    // Ignore keys typed into form controls (deck/lang selects, slider inputs).
+    const tag = (e.target as HTMLElement)?.tagName
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return
+
+    if (e.code === 'Space') {
+      e.preventDefault() // stop page scroll
+      if (canReveal) revealed = true
+      else spinIfPossible()
+    } else if (e.key === 's' || e.key === 'S') {
+      e.preventDefault()
+      spinIfPossible() // always spins, regardless of reveal state
+    } else if (e.key === 'a' || e.key === 'r' || e.key === 'A' || e.key === 'R') {
+      if (canReveal) {
+        e.preventDefault()
+        revealed = true
+      }
+    }
+  }
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 <div class="page">
   <div class="shell">

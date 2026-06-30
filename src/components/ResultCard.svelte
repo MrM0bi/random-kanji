@@ -33,7 +33,11 @@
   {/if}
 
   {#if !revealed}
-    <button class="btn btn-accent reveal" onclick={() => (revealed = true)}>
+    <button
+      class="btn btn-accent reveal"
+      title="Auflösen (Leertaste, A order R)"
+      onclick={() => (revealed = true)}
+    >
       Auflösen
     </button>
   {:else}
