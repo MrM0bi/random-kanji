@@ -5,8 +5,18 @@
     faPersonWalking,
     faCarSide,
     faRocket,
+    faStar,
+    faRepeat,
   } from '@fortawesome/free-solid-svg-icons'
-  import { sourceId, lang, theme, spinSpeed, deckStats } from '../lib/stores'
+  import {
+    sourceId,
+    lang,
+    theme,
+    spinSpeed,
+    deckStats,
+    specialsOn,
+    avoidRepeats,
+  } from '../lib/stores'
   import { SOURCES } from '../lib/sources'
   import { config, type SpinSpeed } from '../lib/config'
   import { langLabel } from '../lib/display'
@@ -65,6 +75,34 @@
         aria-label="Tempo: {$config.spinSpeeds[$spinSpeed].label} (wechseln)"
       >
         <Icon icon={speedIcons[$spinSpeed]} />
+      </button>
+    </div>
+
+    <div class="ctrl">
+      <span class="ctrl-label">Specials</span>
+      <button
+        class="btn icon-btn"
+        class:off={!$specialsOn}
+        onclick={() => ($specialsOn = !$specialsOn)}
+        title={$specialsOn ? 'Specials aktiv' : 'Specials deaktiviert'}
+        aria-label="Specials ein-/ausschalten"
+        aria-pressed={$specialsOn}
+      >
+        <Icon icon={faStar} />
+      </button>
+    </div>
+
+    <div class="ctrl">
+      <span class="ctrl-label">WDH.</span>
+      <button
+        class="btn icon-btn"
+        class:off={$avoidRepeats}
+        onclick={() => ($avoidRepeats = !$avoidRepeats)}
+        title={$avoidRepeats ? 'Wiederholung aus – jede Karte 1×' : 'Wiederholung erlaubt'}
+        aria-label="Wiederholung ein-/ausschalten"
+        aria-pressed={!$avoidRepeats}
+      >
+        <Icon icon={faRepeat} />
       </button>
     </div>
 
@@ -129,6 +167,10 @@
     padding: 0 0.8rem;
     font-size: 1.05rem;
     color: var(--accent);
+  }
+  .icon-btn.off {
+    color: var(--muted);
+    opacity: 0.6;
   }
 
   /* Compact the header on phones; the desktop layout above is unchanged. */

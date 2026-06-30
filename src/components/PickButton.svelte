@@ -2,15 +2,20 @@
   interface Props {
     disabled?: boolean
     spinning?: boolean
+    empty?: boolean
+    emptyText?: string
     onpick: () => void
   }
 
-  let { disabled = false, spinning = false, onpick }: Props = $props()
+  let { disabled = false, spinning = false, empty = false, emptyText = '', onpick }: Props =
+    $props()
 </script>
 
 <div class="pick-wrap">
   <button class="btn btn-accent pick" {disabled} onclick={onpick}>
-    {#if spinning}
+    {#if empty}
+      {emptyText}
+    {:else if spinning}
       Dreht …
     {:else}
       🎲 Spin

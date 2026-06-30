@@ -76,6 +76,17 @@ export const lang = persisted<string>('rk:lang', 'de')
 export const sourceId = persisted<string>('rk:source', DEFAULT_SOURCE_ID)
 export const rawFilters = persisted<RawFilters>('rk:filters', { ...FULL_FILTERS })
 export const spinSpeed = persisted<SpinSpeed>('rk:speed', 'normal')
+/** Whether rare "loot drop" specials can appear on a spin. */
+export const specialsOn = persisted<boolean>('rk:specials', true)
+
+/* ------------------------------------------------------------------ */
+/* Session-only state (cleared on reload)                              */
+/* ------------------------------------------------------------------ */
+
+/** Button OFF (default) = no repeats: a kanji drawn this session won't recur. */
+export const avoidRepeats = persisted<boolean>('rk:avoidRepeats', true)
+/** Ids drawn this session; only consulted while `avoidRepeats` is on. */
+export const seenIds = writable<Set<string>>(new Set())
 
 /* ------------------------------------------------------------------ */
 /* Runtime (deck) state                                                */
@@ -113,6 +124,20 @@ export const filtered = derived(
 )
 
 export const poolCount = derived(filtered, ($filtered) => $filtered.length)
+
+/** Pickable kanji right now: full pool, or unseen-only when avoiding repeats. */
+export const availableCount = derived(
+  [filtered, avoidRepeats, seenIds],
+  ([$filtered, $avoid, $seen]): number =>
+    $avoid ? $filtered.filter((e) => !$seen.has(e.id)).length : $filtered.length,
+)
+
+/** Filtered kanji temporarily removed by the no-repeat setting (0 when off). */
+export const eliminatedCount = derived(
+  [filtered, avoidRepeats, seenIds],
+  ([$filtered, $avoid, $seen]): number =>
+    $avoid ? $filtered.filter((e) => $seen.has(e.id)).length : 0,
+)
 
 export function resetFilters(): void {
   rawFilters.set({ ...FULL_FILTERS })
