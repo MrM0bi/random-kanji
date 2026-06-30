@@ -12,7 +12,12 @@
 </script>
 
 <div class="pick-wrap">
-  <button class="btn btn-accent pick" {disabled} onclick={onpick}>
+  <button
+    class="btn btn-accent pick"
+    {disabled}
+    title={empty ? 'Pool leer' : 'Spin (Leertaste oder S)'}
+    onclick={onpick}
+  >
     {#if empty}
       {emptyText}
     {:else if spinning}
