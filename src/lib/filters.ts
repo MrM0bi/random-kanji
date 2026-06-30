@@ -23,16 +23,23 @@ export function applyFilters(
   })
 }
 
-/** Pick a random entry, avoiding an immediate repeat when the pool allows. */
+/**
+ * Pick a random entry, avoiding an immediate repeat when the pool allows.
+ * `avoid` (optional) excludes already-seen ids; if that empties the pool the
+ * exclusion is dropped so a spin always returns something.
+ */
 export function pickRandom(
   pool: KanjiEntry[],
   lastId?: string,
+  avoid?: Set<string>,
 ): KanjiEntry | null {
   if (pool.length === 0) return null
-  if (pool.length === 1) return pool[0]
+  let candidates = avoid?.size ? pool.filter((e) => !avoid.has(e.id)) : pool
+  if (candidates.length === 0) candidates = pool
+  if (candidates.length === 1) return candidates[0]
   let pick: KanjiEntry
   do {
-    pick = pool[Math.floor(Math.random() * pool.length)]
+    pick = candidates[Math.floor(Math.random() * candidates.length)]
   } while (pick.id === lastId)
   return pick
 }

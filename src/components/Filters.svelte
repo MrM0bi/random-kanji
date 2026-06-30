@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { deckStats, filters, rawFilters, poolCount, resetFilters } from '../lib/stores'
+  import {
+    deckStats,
+    filters,
+    rawFilters,
+    availableCount,
+    eliminatedCount,
+    resetFilters,
+  } from '../lib/stores'
   import RangeSlider from './RangeSlider.svelte'
   import JlptSelector from './JlptSelector.svelte'
 
@@ -15,8 +22,11 @@
   <div class="filters-head">
     <h2>Filter</h2>
     <div class="head-right">
-      <span class="pool-count" class:empty={$poolCount === 0}>
-        {$poolCount} im Pool
+      <span class="pool-count" class:empty={$availableCount === 0}>
+        {$availableCount} im Pool
+        {#if $eliminatedCount > 0}
+          <span class="eliminated">({$eliminatedCount} ausgeschlossen)</span>
+        {/if}
       </span>
       <button class="btn reset" onclick={resetFilters}>Zurücksetzen</button>
     </div>
@@ -75,6 +85,10 @@
   .pool-count.empty {
     color: var(--accent);
     font-weight: 600;
+  }
+  .eliminated {
+    color: var(--muted);
+    font-size: 0.78rem;
   }
   .reset {
     font-size: 0.82rem;

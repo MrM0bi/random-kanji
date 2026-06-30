@@ -9,12 +9,15 @@
     deckStats,
     filters,
     filtered,
-    poolCount,
+    availableCount,
     loadState,
     loadError,
     currentPick,
     lastPickId,
     resetFilters,
+    specialsOn,
+    avoidRepeats,
+    seenIds,
   } from './lib/stores'
   import { spinSpeed } from './lib/stores'
   import { sourceById } from './lib/sources'
@@ -79,14 +82,15 @@
     if (!$filters || pool.length === 0) return
 
     // Roll for a rare special "loot drop" first; otherwise a normal kanji.
-    const special = maybePickSpecial()
+    const special = $specialsOn ? maybePickSpecial() : null
     let pick: import('./lib/stores').Pick
     if (special) {
       pick = { kind: 'special', item: special, description: pickDescription(special) }
     } else {
-      const entry = pickRandom(pool, $lastPickId)
+      const entry = pickRandom(pool, $lastPickId, $avoidRepeats ? $seenIds : undefined)
       if (!entry) return
       lastPickId.set(entry.id)
+      if ($avoidRepeats) seenIds.update((s) => new Set(s).add(entry.id))
       pick = { kind: 'kanji', entry }
     }
 
@@ -127,7 +131,9 @@
         <section class="card stage">
           <PickButton
             spinning={phase === 'spinning'}
-            disabled={$poolCount === 0 || phase === 'spinning'}
+            disabled={$availableCount === 0 || phase === 'spinning'}
+            empty={$availableCount === 0}
+            emptyText="Pool leer"
             onpick={doPick}
           />
 
@@ -162,9 +168,9 @@
                   </div>
                 {/key}
               {/if}
-            {:else if $poolCount === 0}
+            {:else if $availableCount === 0}
               <p class="hint warn">
-                Keine Kanji entsprechen den Filtern. Erweitere den Bereich.
+                Pool leer – erweitere die Filter{#if $avoidRepeats} oder erlaube Wiederholungen{/if}.
               </p>
             {:else}
               <p class="hint">
@@ -183,7 +189,7 @@
     {/if}
 
     <footer class="footer">
-      <span>🏮 Random Kanji · Heisig</span>
+      <span>🏮 Random Kanji · MrMobi</span>
     </footer>
   </div>
 </div>
