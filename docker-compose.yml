@@ -8,8 +8,8 @@ services:
     # ports:
     #   - "80:80"
     volumes:
-      - ./dist:/srv:ro
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${DIR}/dist:/srv:ro
+      - ${DIR}/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -24,12 +24,6 @@ services:
       - "traefik.http.routers.${TNAME}.tls=true"
       - "traefik.http.routers.${TNAME}.service=${TNAME}"
       - "traefik.http.services.${TNAME}.loadbalancer.server.port=80"
-      #> internal
-      - "traefik.http.routers.${TNAMEINT}.rule=Host(`kanji.local.mrmobi.dev`)"
-      - "traefik.http.routers.${TNAMEINT}.entrypoints=https-internal"
-      - "traefik.http.routers.${TNAMEINT}.tls=true"
-      - "traefik.http.routers.${TNAMEINT}.service=${TNAME}"
-      - "traefik.http.services.${TNAMEINT}.loadbalancer.server.port=80"
 
 volumes:
   caddy_data:

@@ -117,9 +117,10 @@ Node.js in the final container.
 The compose file is wired for **Traefik**. Before deploying, adjust:
 
 - the external network named `proxy` — must be the network your Traefik instance is on;
-- the env vars **`TNAME`** and **`TNAMEINT`** — the Traefik router/service names;
-- the router labels — hosts (`kanji.mrmobi.dev` and `tools.local.mrmobi.dev`), `entrypoints` and
-  `tls` settings, matching your Traefik configuration.
+- the env var **`TNAME`** — the Traefik router/service name;
+- the env var **`DIR`** — absolute path to the project root (e.g. `/home/mobi/random-kanji`);
+- the router label — host (`kanji.mrmobi.dev`), `entrypoints` and `tls` settings, matching your
+  Traefik configuration.
 
 ### Option 2 — Any static web server
 
