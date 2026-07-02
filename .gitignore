@@ -1,9 +1,9 @@
 node_modules
 dist
-dist-ssr
+.bun-dev
 *.local
 .DS_Store
-.vite
+bun.lock
 
 # Local, machine-specific Claude Code settings
 .claude/settings.local.json

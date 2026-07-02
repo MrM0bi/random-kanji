@@ -13,7 +13,7 @@ export const SOURCES: Source[] = [
   {
     id: 'heisig-1',
     label: 'Heisig',
-    url: `${import.meta.env.BASE_URL}kanji.json`,
+    url: `/kanji.json`,
   },
 ]
 

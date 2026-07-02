@@ -1,45 +1,20 @@
+# Production deployment — build locally with `bun run build`, then
+# Caddy serves ./dist directly via a bind mount.
 services:
-  random-kanji:
-    # Build the image from the repo (works for Portainer "Repository" stacks).
-    build:
-      context: .
-      dockerfile: Dockerfile
-
-    # NOTE: do NOT add an unqualified `image: random-kanji:latest` here. Such a
-    # name resolves to docker.io/library/random-kanji, and Portainer's
-    # "Pull and redeploy" then tries to PULL it from Docker Hub — which fails
-    # ("pull access denied"), because the image is only ever built locally and
-    # never pushed. Building from git needs no image name at all.
-    #
-    # `pull_policy: build` makes Compose (re)build from the repo on every
-    # redeploy and never attempt a registry pull.
-    pull_policy: build
-
-    # --- Alternative: pull a prebuilt image from a registry (see GitOps below) ---
-    # If you switch to the CI-build-and-push workflow, delete the `build:` and
-    # `pull_policy:` lines above and use an image from your registry instead:
-    # image: ghcr.io/<your-gh-username>/random-kanji:latest
-
+  caddy:
+    image: caddy:2-alpine
     container_name: random-kanji
     restart: unless-stopped
-
-    # Caddy inside the container serves the site on port 80. With Traefik you do
-    # NOT need to publish a host port — Traefik reaches it over the shared
-    # network below. (For a quick local test without Traefik, uncomment:)
     # ports:
-    #   - "8080:80"
-
-    # The runtime config (spinner feel, spin speeds, loot odds & items) is baked
-    # into the image at /srv/config.json. To tweak it WITHOUT rebuilding, drop a
-    # config.json next to this file and bind-mount it over the baked one, then
-    # restart the container:
-    # volumes:
-    #   - ./config.json:/srv/config.json:ro
-
+    #   - "80:80"
+    volumes:
+      - ./dist:/srv:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - proxy # Traefik
       - internal # Stack-internal
-
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -49,9 +24,19 @@ services:
       - "traefik.http.routers.${TNAME}.tls=true"
       - "traefik.http.routers.${TNAME}.service=${TNAME}"
       - "traefik.http.services.${TNAME}.loadbalancer.server.port=80"
+      #> internal
+      - "traefik.http.routers.${TNAMEINT}.rule=Host(`kanji.local.mrmobi.dev`)"
+      - "traefik.http.routers.${TNAMEINT}.entrypoints=https-internal"
+      - "traefik.http.routers.${TNAMEINT}.tls=true"
+      - "traefik.http.routers.${TNAMEINT}.service=${TNAME}"
+      - "traefik.http.services.${TNAMEINT}.loadbalancer.server.port=80"
+
+volumes:
+  caddy_data:
+  caddy_config:
 
 networks:
-  proxy: # Taefik Network
+  proxy:
     external: true
-  internal: # Create Stack specific internal Network
+  internal:
     external: false
