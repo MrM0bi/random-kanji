@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { fade } from 'svelte/transition'
+  import { onMount } from "svelte";
+  import { fade } from "svelte/transition";
   import {
     sourceId,
     lang,
@@ -18,117 +18,130 @@
     specialsOn,
     avoidRepeats,
     seenIds,
-  } from './lib/stores'
-  import { spinSpeed } from './lib/stores'
-  import { sourceById } from './lib/sources'
-  import { loadDeck, computeStats } from './lib/data'
-  import { pickRandom } from './lib/filters'
-  import { maybePickSpecial, pickDescription } from './lib/specials'
-  import { config } from './lib/config'
-  import { initTheme } from './lib/theme'
+  } from "./lib/stores";
+  import { spinSpeed } from "./lib/stores";
+  import { sourceById } from "./lib/sources";
+  import { loadDeck, computeStats } from "./lib/data";
+  import { pickRandom } from "./lib/filters";
+  import { maybePickSpecial, pickDescription } from "./lib/specials";
+  import { config } from "./lib/config";
+  import { initTheme } from "./lib/theme";
 
-  import TopBar from './components/TopBar.svelte'
-  import ModeToggle from './components/ModeToggle.svelte'
-  import Filters from './components/Filters.svelte'
-  import SpinnerReel from './components/SpinnerReel.svelte'
-  import ResultCard from './components/ResultCard.svelte'
-  import SpecialCard from './components/SpecialCard.svelte'
-  import SpecialEffects from './components/SpecialEffects.svelte'
-  import PickButton from './components/PickButton.svelte'
+  import TopBar from "./components/TopBar.svelte";
+  import ModeToggle from "./components/ModeToggle.svelte";
+  import Filters from "./components/Filters.svelte";
+  import SpinnerReel from "./components/SpinnerReel.svelte";
+  import ResultCard from "./components/ResultCard.svelte";
+  import SpecialCard from "./components/SpecialCard.svelte";
+  import SpecialEffects from "./components/SpecialEffects.svelte";
+  import PickButton from "./components/PickButton.svelte";
 
-  type Phase = 'idle' | 'spinning' | 'result'
+  type Phase = "idle" | "spinning" | "result";
 
-  let phase = $state<Phase>('idle')
-  let revealed = $state(false)
-  let reel = $state<SpinnerReel | null>(null)
-  let firstLoad = true
+  let phase = $state<Phase>("idle");
+  let revealed = $state(false);
+  let reel = $state<SpinnerReel | null>(null);
+  let firstLoad = true;
 
   async function loadDeckFor(id: string): Promise<void> {
-    const src = sourceById(id)
-    loadState.set('loading')
-    loadError.set('')
+    const src = sourceById(id);
+    loadState.set("loading");
+    loadError.set("");
     try {
-      const deck = await loadDeck(src.url)
-      entries.set(deck.kanji)
-      const stats = computeStats(deck)
-      deckStats.set(stats)
+      const deck = await loadDeck(src.url);
+      entries.set(deck.kanji);
+      const stats = computeStats(deck);
+      deckStats.set(stats);
       // Default language to the deck's first available if current is missing.
       if (!stats.languages.includes($lang) && stats.languages.length > 0) {
-        lang.set(stats.languages[0])
+        lang.set(stats.languages[0]);
       }
       // Switching to a different deck resets ranges; first load keeps persisted.
-      if (!firstLoad) resetFilters()
-      firstLoad = false
-      currentPick.set(null)
-      phase = 'idle'
-      loadState.set('ready')
+      if (!firstLoad) resetFilters();
+      firstLoad = false;
+      currentPick.set(null);
+      phase = "idle";
+      loadState.set("ready");
     } catch (e) {
-      loadError.set(e instanceof Error ? e.message : String(e))
-      loadState.set('error')
+      loadError.set(e instanceof Error ? e.message : String(e));
+      loadState.set("error");
     }
   }
 
   onMount(() => {
-    initTheme()
-  })
+    initTheme();
+  });
 
   $effect(() => {
-    const id = $sourceId
-    loadDeckFor(id)
-  })
+    const id = $sourceId;
+    loadDeckFor(id);
+  });
 
   function doPick(): void {
-    const pool = $filtered
-    if (!$filters || pool.length === 0) return
+    const pool = $filtered;
+    if (!$filters || pool.length === 0) return;
 
     // Roll for a rare special "loot drop" first; otherwise a normal kanji.
-    const special = $specialsOn ? maybePickSpecial() : null
-    let pick: import('./lib/stores').Pick
+    const special = $specialsOn ? maybePickSpecial() : null;
+    let pick: import("./lib/stores").Pick;
     if (special) {
-      pick = { kind: 'special', item: special, description: pickDescription(special) }
+      pick = {
+        kind: "special",
+        item: special,
+        description: pickDescription(special),
+      };
     } else {
-      const entry = pickRandom(pool, $lastPickId, $avoidRepeats ? $seenIds : undefined)
-      if (!entry) return
-      lastPickId.set(entry.id)
-      if ($avoidRepeats) seenIds.update((s) => new Set(s).add(entry.id))
-      pick = { kind: 'kanji', entry }
+      const entry = pickRandom(
+        pool,
+        $lastPickId,
+        $avoidRepeats ? $seenIds : undefined,
+      );
+      if (!entry) return;
+      lastPickId.set(entry.id);
+      if ($avoidRepeats) seenIds.update((s) => new Set(s).add(entry.id));
+      pick = { kind: "kanji", entry };
     }
 
-    currentPick.set(pick)
-    revealed = false
-    phase = 'spinning'
-    reel?.spin(pick, pool)
+    currentPick.set(pick);
+    revealed = false;
+    phase = "spinning";
+    reel?.spin(pick, pool);
   }
 
   function onSettled(): void {
-    phase = 'result'
+    phase = "result";
   }
 
   // A kanji result that hasn't been revealed yet (specials have no reveal step).
   const canReveal = $derived(
-    phase === 'result' && $currentPick?.kind === 'kanji' && !revealed,
-  )
+    phase === "result" && $currentPick?.kind === "kanji" && !revealed,
+  );
 
   function spinIfPossible(): void {
-    if (phase !== 'spinning' && $availableCount > 0) doPick()
+    if (phase !== "spinning" && $availableCount > 0) doPick();
   }
 
   function onKey(e: KeyboardEvent): void {
     // Ignore keys typed into form controls (deck/lang selects, slider inputs).
-    const tag = (e.target as HTMLElement)?.tagName
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
 
-    if (e.code === 'Space') {
-      e.preventDefault() // stop page scroll
-      if (canReveal) revealed = true
-      else spinIfPossible()
-    } else if (e.key === 's' || e.key === 'S') {
-      e.preventDefault()
-      spinIfPossible() // always spins, regardless of reveal state
-    } else if (e.key === 'a' || e.key === 'r' || e.key === 'A' || e.key === 'R') {
+    if (e.code === "Space") {
+      e.preventDefault(); // stop page scroll
+      if (canReveal) revealed = true;
+      else spinIfPossible();
+    } else if (e.key === "s" || e.key === "S") {
+      e.preventDefault();
+      spinIfPossible(); // always spins, regardless of reveal state
+    } else if (
+      e.key === "a" ||
+      e.key === "r" ||
+      e.key === "A" ||
+      e.key === "R"
+    ) {
       if (canReveal) {
-        e.preventDefault()
-        revealed = true
+        e.preventDefault();
+        revealed = true;
       }
     }
   }
@@ -140,12 +153,12 @@
   <div class="shell">
     <TopBar />
 
-    {#if $loadState === 'loading'}
+    {#if $loadState === "loading"}
       <div class="state card" in:fade>
         <div class="spinner" aria-hidden="true"></div>
         <p>Deck wird geladen …</p>
       </div>
-    {:else if $loadState === 'error'}
+    {:else if $loadState === "error"}
       <div class="state card" in:fade>
         <p class="err">Deck konnte nicht geladen werden.</p>
         <p class="err-detail">{$loadError}</p>
@@ -161,8 +174,8 @@
 
         <section class="card stage">
           <PickButton
-            spinning={phase === 'spinning'}
-            disabled={$availableCount === 0 || phase === 'spinning'}
+            spinning={phase === "spinning"}
+            disabled={$availableCount === 0 || phase === "spinning"}
             empty={$availableCount === 0}
             emptyText="Pool leer"
             onpick={doPick}
@@ -178,8 +191,8 @@
           />
 
           <div class="stage-body">
-            {#if phase === 'result' && $currentPick}
-              {#if $currentPick.kind === 'special'}
+            {#if phase === "result" && $currentPick}
+              {#if $currentPick.kind === "special"}
                 {#key $currentPick.item.id}
                   <SpecialCard
                     item={$currentPick.item}
@@ -201,14 +214,17 @@
               {/if}
             {:else if $availableCount === 0}
               <p class="hint warn">
-                Pool leer – erweitere die Filter{#if $avoidRepeats} oder erlaube Wiederholungen{/if}.
+                Pool leer – erweitere die Filter{#if $avoidRepeats}
+                  oder erlaube Wiederholungen{/if}.
               </p>
             {:else}
               <p class="hint">
-                {#if $mode === 'kanji'}
-                  Drücke <strong>Spin</strong>, um ein zufälliges Kanji zu ziehen.
+                {#if $mode === "kanji"}
+                  Drücke <strong>Spin</strong>, um ein zufälliges Kanji zu
+                  ziehen.
                 {:else}
-                  Drücke <strong>Spin</strong>, um eine zufällige Bedeutung zu ziehen.
+                  Drücke <strong>Spin</strong>, um eine zufällige Bedeutung zu
+                  ziehen.
                 {/if}
               </p>
             {/if}

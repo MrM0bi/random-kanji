@@ -121,7 +121,7 @@ function mergeConfig(data: Partial<AppConfig> | null): AppConfig {
 /** Fetch `config.json` and populate the `config` store. Falls back silently. */
 export async function loadConfig(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}config.json`, { cache: 'no-cache' })
+    const res = await fetch(`/config.json`, { cache: 'no-cache' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as Partial<AppConfig>
     config.set(mergeConfig(data))
